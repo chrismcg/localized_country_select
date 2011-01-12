@@ -26,6 +26,12 @@ class LocalizedCountrySelectTest < Test::Unit::TestCase
   include ActionView::Helpers::FormOptionsHelper
   include ActionView::Helpers::FormTagHelper
 
+  def setup
+    I18n.backend.store_translations('en', { :countries => { :AF => 'Afghanistan', :CA => 'Canada', :CN => 'China', :CZ => 'Czech Republic', :ES => 'Spain', :TW => 'Taiwan', :US => 'United States' } })
+    I18n.backend.store_translations('ru', { :countries => { :ES => 'Испания', :BT => 'Бутан', :VU => 'Вануату' } })
+    I18n.locale = 'en'
+  end
+
   def test_action_view_should_include_helper_for_object
     assert ActionView::Helpers::FormBuilder.instance_methods.include?('country_select') # WTF not working with 1.9
     assert ActionView::Helpers::FormOptionsHelper.instance_methods.include?('country_select')
@@ -72,13 +78,12 @@ class LocalizedCountrySelectTest < Test::Unit::TestCase
 
   def test_localized_countries_array_returns_correctly
     assert_nothing_raised { LocalizedCountrySelect::localized_countries_array() }
-    # puts LocalizedCountrySelect::localized_countries_array.inspect
     I18n.locale = 'en'
-    assert_equal 243, LocalizedCountrySelect::localized_countries_array.size
+    assert_equal 7, LocalizedCountrySelect::localized_countries_array.size
     assert_equal 'Afghanistan', LocalizedCountrySelect::localized_countries_array.first[0]
     I18n.locale = 'ru'
-    assert_equal 243, LocalizedCountrySelect::localized_countries_array.size
-    assert_equal 'Австралия', LocalizedCountrySelect::localized_countries_array.first[0]
+    assert_equal 3, LocalizedCountrySelect::localized_countries_array.size
+    assert_equal 'Бутан', LocalizedCountrySelect::localized_countries_array.first[0]
   end
 
   def test_priority_countries_returns_correctly_and_in_correct_order
@@ -102,16 +107,4 @@ class LocalizedCountrySelectTest < Test::Unit::TestCase
     I18n.locale = 'ru'
     assert_match Regexp.new(Regexp.escape(%Q{<option value="BT">Бутан</option>\n<option value="VU">Вануату</option>})), country_select(:user, :country)
   end
-
-  # private
-
-  def setup
-    ['ru', 'en'].each do |locale|
-      # I18n.load_translations( File.join(File.dirname(__FILE__), '..', 'locale', "#{locale}.rb")  )  # <-- Old style! :)
-      I18n.load_path += Dir[ File.join(File.dirname(__FILE__), '..', 'locale', "#{locale}.rb") ]
-    end
-    # I18n.locale = I18n.default_locale
-    I18n.locale = 'en'
-  end
-
 end
