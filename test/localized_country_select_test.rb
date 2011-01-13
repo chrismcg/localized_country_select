@@ -29,6 +29,7 @@ class LocalizedCountrySelectTest < Test::Unit::TestCase
   def setup
     I18n.backend.store_translations('en', { :countries => { :AF => 'Afghanistan', :CA => 'Canada', :CN => 'China', :CZ => 'Czech Republic', :ES => 'Spain', :TW => 'Taiwan', :US => 'United States' } })
     I18n.backend.store_translations('ru', { :countries => { :ES => 'Испания', :BT => 'Бутан', :VU => 'Вануату' } })
+    I18n.backend.store_translations('cz', { :countries => { :AE => 'Spojené arabské emiráty', :BI => 'Burundi', :TD => 'Čad' } })
     I18n.locale = 'en'
   end
 
@@ -104,7 +105,7 @@ class LocalizedCountrySelectTest < Test::Unit::TestCase
   end
 
   def test_should_list_countries_with_accented_names_in_correct_order
-    I18n.locale = 'ru'
-    assert_match Regexp.new(Regexp.escape(%Q{<option value="BT">Бутан</option>\n<option value="VU">Вануату</option>})), country_select(:user, :country)
+    I18n.locale = 'cz'
+    assert_match Regexp.new(Regexp.escape(%Q{<option value="BI">Burundi</option>\n<option value="TD">Čad</option>\n<option value="AE">Spojené arabské emiráty</option>})), country_select(:user, :country)
   end
 end
