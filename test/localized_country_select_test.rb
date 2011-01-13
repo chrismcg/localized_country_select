@@ -107,6 +107,6 @@ class LocalizedCountrySelectTest < Test::Unit::TestCase
 
   def test_should_list_countries_with_accented_names_in_correct_order
     I18n.locale = 'cz'
-    assert_match Regexp.new(Regexp.escape(%Q{<option value="BI">Burundi</option>\n<option value="TD">Čad</option>\n<option value="AE">Spojené arabské emiráty</option>})), country_select(:user, :country)
+    assert_match Regexp.new(Regexp.escape(%Q{<option value="BI">Burundi</option>\n<option value="TD">Čad</option>\n<option value="AE">Spojené arabské emiráty</option>})), country_select(:user, :country), "Not sorting correctly, is icunicode installed?"
   end
 end
