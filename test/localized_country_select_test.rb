@@ -1,5 +1,8 @@
-# coding: utf-8
-$KCODE = 'u'
+# encoding: utf-8
+
+if RUBY_VERSION < '1.9'
+  $KCODE = 'u'
+end
 
 require 'test/unit'
 
@@ -18,6 +21,12 @@ rescue LoadError
   puts "[!] Install redgreen gem for better test output ($ sudo gem install redgreen)"
 end unless ENV["TM_FILEPATH"]
 
+begin
+  require 'icunicode'
+rescue LoadError
+  puts "[!] no icunicode gem, sort will not take into account collations"
+end
+
 require 'localized_country_select'
 
 class LocalizedCountrySelectTest < Test::Unit::TestCase
@@ -34,12 +43,12 @@ class LocalizedCountrySelectTest < Test::Unit::TestCase
   end
 
   def test_action_view_should_include_helper_for_object
-    assert ActionView::Helpers::FormBuilder.instance_methods.include?('country_select') # WTF not working with 1.9
-    assert ActionView::Helpers::FormOptionsHelper.instance_methods.include?('country_select')
+    assert ActionView::Helpers::FormBuilder.instance_methods.map(&:to_s).include?('country_select')
+    assert ActionView::Helpers::FormOptionsHelper.instance_methods.map(&:to_s).include?('country_select')
   end
 
   def test_action_view_should_include_helper_tag
-    assert ActionView::Helpers::FormOptionsHelper.instance_methods.include?('country_select_tag') # WTF not working with 1.9
+    assert ActionView::Helpers::FormOptionsHelper.instance_methods.map(&:to_s).include?('country_select_tag')
   end
 
   def test_should_return_select_tag_with_proper_name_for_object
