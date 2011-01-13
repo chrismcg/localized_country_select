@@ -26,11 +26,9 @@ module LocalizedCountrySelect
       if(options[:description]==:abbreviated)
         I18n.translate(:countries).map { |key, value| [key.to_s.upcase] }.
           sort_by { |country| country.first.respond_to?(:unicode_sort_key) ? country.first.unicode_sort_key : country.first }
-          # sort_by { |country| Iconv.iconv('ascii//ignore//translit', 'utf-8', country.first).to_s }
       else
         I18n.translate(:countries).map { |key, value| [value, key.to_s.upcase] }.
           sort_by { |country| country.first.respond_to?(:unicode_sort_key) ? country.first.unicode_sort_key : country.first }
-          # sort_by { |country| Iconv.iconv('ascii//ignore//translit', 'utf-8', country.first).to_s }
       end
     end
     # Return array with codes and localized country names for array of country codes passed as argument
