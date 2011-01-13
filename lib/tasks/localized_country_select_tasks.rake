@@ -18,74 +18,77 @@ require 'open-uri'
 
 namespace :import do
 
-  desc "Import country codes and names for various languages from the Unicode.org CLDR archive. Depends on Hpricot gem."
+  desc "Import country codes and names for various languages from the Unicode.org CLDR archive."
   task :country_select do
     begin
-      require 'hpricot'
+      require 'nokogiri'
     rescue LoadError
-      puts "Error: Hpricot library required to use this task (import:country_select)"
+      puts "Error: Nokogiri library required to use this task (import:country_select)"
       exit
     end
-    
-    # TODO : Implement locale import chooser from CLDR root via Highline
-    
-    # Setup variables
-    locale = ENV['LOCALE']
-    unless locale
-      puts "\n[!] Usage: rake import:country_select LOCALE=de\n\n"
-      exit 0
-    end
 
-    # ----- Get the CLDR HTML     --------------------------------------------------
     begin
-      puts "... getting the HTML file for locale '#{locale}'"
-      doc = Hpricot( open("http://www.unicode.org/cldr/data/charts/summary/#{locale}.html") )
-    rescue => e
-      puts "[!] Invalid locale name '#{locale}'! Not found in CLDR (#{e})"
+      require 'ya2yaml'
+    rescue LoadError
+      puts "Error: ya2yaml library required to use this task (import:country_select)"
+      exit
+    end
+
+    if RUBY_VERSION < '1.9'
+      $KCODE = 'u'
+    end
+
+    # Setup variables
+    locales = ENV['LOCALES']
+    unless locales
+      puts "\n[!] Usage: rake import:country_select LOCALES=de,en\n\n"
       exit 0
     end
+    locales = locales.split(',')
 
+    ignore_list = ENV['IGNORE'] ? ENV['IGNORE'].split(',') : []
 
-    # ----- Parse the HTML with Hpricot     ----------------------------------------
-    puts "... parsing the HTML file"
-    countries = []
-    doc.search("//tr").each do |row|
-      if row.search("td[@class='n']") && 
-         row.search("td[@class='n']").inner_html =~ /^namesterritory$/ && 
-         row.search("td[@class='g']").inner_html =~ /^[A-Z]{2}/
-        code   = row.search("td[@class='g']").inner_text
-        code   = code[-code.size, 2]
-        name   = row.search("td[@class='v']").inner_text
-        countries << { :code => code.to_sym, :name => name.to_s }
-        print " ... #{name}"
+    locales.each do |locale|
+
+      # ----- Get the CLDR HTML     --------------------------------------------------
+      begin
+        puts "... getting the HTML file for locale '#{locale}'"
+        doc = Nokogiri( open("http://www.unicode.org/cldr/data/charts/summary/#{locale}.html") )
+      rescue => e
+        puts "[!] Invalid locale name '#{locale}'! Not found in CLDR (#{e})"
+        exit 0
       end
+
+
+      # ----- Parse the HTML with Hpricot     ----------------------------------------
+      puts "... parsing the HTML file"
+      countries = {}
+      doc.search("//tr").each do |row|
+        if row.search("td[@class='n']") && 
+           row.search("td[@class='n']").inner_html =~ /^namesterritory$/ && 
+           row.search("td[@class='g']").inner_html =~ /^[A-Z]{2}$/
+          code   = row.search("td[@class='g']").inner_text.to_s
+          next if ignore_list.include?(code)
+          name   = row.search("td[@class='v']").inner_text.to_s
+          countries[code] = name
+          puts "#{code}: #{name}"
+        end
+      end
+
+
+      # ----- Prepare the output format     ------------------------------------------
+      output_hash = { locale => { 'countries' => countries } }
+
+      # ----- Write the parsed values into file      ---------------------------------
+      puts "\n... writing the output"
+      filename = "countries.#{locale}.yml"
+      File.open(filename, "w+") do |file|
+        file.write output_hash.ya2yaml[5..-1]
+      end
+      
+      puts "\n---\nWritten values for the '#{locale}' into file: #{filename}\n"
+      # ------------------------------------------------------------------------------
     end
-
-
-    # ----- Prepare the output format     ------------------------------------------
-    output =<<HEAD
-{ :#{locale} => {
-
-    :countries => {
-HEAD
-    countries.each do |country|
-      output << "\t\t\t:#{country[:code]} => \"#{country[:name]}\",\n"
-    end
-    output <<<<TAIL
-    } 
-
-  }
-}
-TAIL
-
-    
-    # ----- Write the parsed values into file      ---------------------------------
-    puts "\n... writing the output"
-    filename = File.join(File.dirname(__FILE__), '..', '..', 'locale', "#{locale}.rb")
-    filename += '.NEW' if File.exists?(filename) # Append 'NEW' if file exists
-    File.open(filename, 'w+') { |f| f << output }
-    puts "\n---\nWritten values for the '#{locale}' into file: #{filename}\n"
-    # ------------------------------------------------------------------------------
   end
 
 end
