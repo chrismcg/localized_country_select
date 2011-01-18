@@ -1,10 +1,10 @@
 Gem::Specification.new do |s|
   s.name = %q{localized_country_select}
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Chris McGrath", "LIM SAS", "Damien MATHIEU", "Julien SANCHEZ", "Herv\303\251 GAUCHER"]
-  s.date = %q{2011-01-13}
+  s.date = %q{2011-01-18}
   s.description = %q{Where are you from ?}
   s.email = %q{chris@octopod.info}
   s.extra_rdoc_files = [
