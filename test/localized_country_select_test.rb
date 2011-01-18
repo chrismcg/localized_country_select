@@ -72,6 +72,12 @@ class LocalizedCountrySelectTest < Test::Unit::TestCase
       Regexp.escape("<option value=\"ES\">Spain</option>\n<option value=\"CZ\">Czech Republic</option><option value=\"\" disabled=\"disabled\">-------------</option>\n<option value=\"AF\">Afghanistan</option>\n"))
   end
 
+  def test_priority_countries_dont_appear_twice
+    assert_equal %[<option value=\"ES\">Spain</option><option value=\"\" disabled=\"disabled\">-------------</option>\n<option value=\"AF\">Afghanistan</option>\n<option value=\"CA\">Canada</option>\n<option value=\"CN\">China</option>\n<option value=\"CZ\">Czech Republic</option>\n<option value=\"TW\">Taiwan</option>\n<option value=\"US\">United States</option>],
+      country_options_for_select(nil, [:ES])
+  end
+
+
   def test_should_not_include_ignored_countries
     assert_equal %[<option value=\"AF\">Afghanistan</option>\n<option value=\"CA\">Canada</option>\n<option value=\"CN\">China</option>\n<option value=\"CZ\">Czech Republic</option>\n<option value=\"TW\">Taiwan</option>\n<option value=\"US\">United States</option>],
       country_options_for_select(nil, nil, :ignore => [:ES])
