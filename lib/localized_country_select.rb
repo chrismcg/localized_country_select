@@ -82,7 +82,7 @@ module ActionView
           country_options += "<option value=\"\" disabled=\"disabled\">-------------</option>\n"
           options[:ignore] = (options[:ignore] || []) + priority_countries
         end
-        country_options + options_for_select(LocalizedCountrySelect::localized_countries_array(options), selected)
+        (country_options + options_for_select(LocalizedCountrySelect::localized_countries_array(options), selected)).html_safe
       end
     end
 
